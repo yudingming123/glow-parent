@@ -4,7 +4,6 @@ import com.google.common.base.CaseFormat;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import javax.transaction.Transactional;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,7 +41,7 @@ public class SqlExecutor {
      * @Param [sql, values]
      * @Desc 执行update操作
      */
-    @Transactional
+    //@Transactional
     public int executeUpdate(String clusterLabel, String sql, List<Object> values) {
         List<Connection> cns = sstm.getConnections(clusterLabel);
         PreparedStatement pst = null;
