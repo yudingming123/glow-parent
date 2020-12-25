@@ -1,27 +1,24 @@
 package com.jimei.glow.server.config;
 
-import com.alibaba.druid.pool.xa.DruidXADataSource;
+import com.alibaba.druid.pool.DruidDataSource;
 import com.atomikos.icatch.jta.UserTransactionImp;
 import com.atomikos.icatch.jta.UserTransactionManager;
-import com.jimei.glow.server.core.DataSourceProperties;
-import com.jimei.glow.server.core.Properties;
-import com.jimei.glow.server.core.SqlSessionTemplateManagement;
+import com.jimei.glow.server.core.GlowDataSourceProperty;
+import com.jimei.glow.server.core.Property;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.jta.atomikos.AtomikosDataSourceBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.jta.JtaTransactionManager;
 
+import javax.sql.DataSource;
 import javax.transaction.UserTransaction;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @Author yudm
@@ -29,10 +26,9 @@ import java.util.stream.Collectors;
  * @Desc
  */
 @Configuration
-@AutoConfigureBefore(DataSourceAutoConfiguration.class)
-@EnableConfigurationProperties(DataSourceProperties.class)
-public class GlowServerConfig {
-    @Bean
+@EnableConfigurationProperties(GlowDataSourceProperty.class)
+public class GlowServerAutoConfig {
+    /*@Bean
     public JtaTransactionManager transactionManager() {
         UserTransactionManager userTransactionManager = new UserTransactionManager();
         UserTransaction userTransaction = new UserTransactionImp();
@@ -49,7 +45,7 @@ public class GlowServerConfig {
         Map<String, Integer> sstDutyMap = new HashMap<>();
         //配置内容
         Map<String, List<Properties>> pListMap =
-                dataSourceProperties.getDbs().stream().collect(Collectors.groupingBy(Properties::getClusterLabel));
+                dataSourceProperties.getDbs().stream().collect(Collectors.groupingBy(Properties::getClustergroup));
         pListMap.forEach((k, v) -> {
             List<SqlSessionTemplate> sstList = new ArrayList<>();
             for (Properties p : v) {
@@ -97,5 +93,51 @@ public class GlowServerConfig {
         sstm.setSstCountMap(sstCountMap);
         sstm.setSstDutyMap(sstDutyMap);
         return sstm;
+    }*/
+
+    // 配置连接池，这里直接new一个Druid连接池，
+    // 也可以new其他的连接池，比如spring boot默认的hikari连接池
+    @Bean(name = "db1DataSource")
+    @Primary
+    public DataSource setDataSource(@Autowired GlowDataSourceProperty glowDataSourceProperty) {
+        Property p = glowDataSourceProperty.getDbs().get(0);
+        DruidDataSource ds = new DruidDataSource();
+        ds.setUrl(p.getUrl());
+        ds.setUsername(p.getUsername());
+        ds.setPassword(p.getPassword());
+        ds.setDriverClassName(p.getDriverClassName());
+        return ds;
+    }
+
+    // 事务配置
+    @Bean(name = "db1TransactionManager")
+    @Primary
+    public DataSourceTransactionManager setTransactionManager(@Qualifier("db1DataSource") DataSource dataSource) {
+        return new DataSourceTransactionManager(dataSource);
+    }
+
+    @Bean
+    public JtaTransactionManager transactionManager() {
+        UserTransactionManager userTransactionManager = new UserTransactionManager();
+        UserTransaction userTransaction = new UserTransactionImp();
+        return new JtaTransactionManager(userTransaction, userTransactionManager);
+    }
+
+    // 配置sessionFactory，这里的多数据源就是每个数据源对应一个sessionFactory
+    // 下面getResources的就是mapper.xml文件
+    @Bean(name = "db1SqlSessionFactory")
+    @Primary
+    public SqlSessionFactory setSqlSessionFactory(@Qualifier("db1DataSource") DataSource dataSource) throws Exception {
+        SqlSessionFactoryBean bean = new SqlSessionFactoryBean();
+        bean.setDataSource(dataSource);
+        //bean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath:mapper/db1/*.xml"));
+        return bean.getObject();
+    }
+
+    // 配置SqlSessionTemplate
+    @Bean(name = "db1SqlSessionTemplate")
+    @Primary
+    public SqlSessionTemplate setSqlSessionTemplate(@Qualifier("db1SqlSessionFactory") SqlSessionFactory sqlSessionFactory) throws Exception {
+        return new SqlSessionTemplate(sqlSessionFactory);
     }
 }

@@ -13,7 +13,7 @@ public class Cause {
     //许可证
     String license;
     //集群对应的标签
-    String label;
+    String group;
     //操作类型
     @NotEmpty(message = "action不能为空")
     String action;
@@ -31,12 +31,12 @@ public class Cause {
         this.license = license;
     }
 
-    public String getLabel() {
-        return label;
+    public String getgroup() {
+        return group;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setgroup(String group) {
+        this.group = group;
     }
 
     public String getAction() {

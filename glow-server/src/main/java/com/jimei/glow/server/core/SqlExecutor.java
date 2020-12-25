@@ -1,9 +1,10 @@
 package com.jimei.glow.server.core;
 
 import com.google.common.base.CaseFormat;
-import org.springframework.stereotype.Component;
+import org.springframework.jdbc.datasource.DataSourceUtils;
 
 import javax.annotation.Resource;
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,27 +14,12 @@ import java.util.Map;
 /**
  * @Author yudm
  * @Date 2020/12/7 15:54
- * @Desc Sql语句执行者，可分数据源并负载均衡
+ * @Desc Sql语句执行者
  */
-@Component
+//@Component
 public class SqlExecutor {
     @Resource
-    private SqlSessionTemplateManagement sstm;
-
-    /**
-     * @Author yudm
-     * @Date 2020/9/25 15:48
-     * @Param [statement, values]
-     * @Desc 向sql的占位符中填充值
-     */
-    private static void fillPlaceholder(PreparedStatement pst, List<Object> values) throws SQLException {
-        if (null == values || values.size() < 1) {
-            return;
-        }
-        for (int i = 0; i < values.size(); ++i) {
-            pst.setObject(i + 1, values.get(i));
-        }
-    }
+    private GlowRoutingDataSource glowRoutingDataSource;
 
     /**
      * @Author yudm
@@ -41,9 +27,8 @@ public class SqlExecutor {
      * @Param [sql, values]
      * @Desc 执行update操作
      */
-    //@Transactional
-    public int executeUpdate(String clusterLabel, String sql, List<Object> values) {
-        List<Connection> cns = sstm.getConnections(clusterLabel);
+    public int executeUpdate(String group, String sql, List<Object> params) {
+        List<Connection> cns = getConnections(group);
         PreparedStatement pst = null;
         try {
             int res = 0;
@@ -51,13 +36,14 @@ public class SqlExecutor {
             for (Connection cn : cns) {
                 pst = cn.prepareStatement(sql);
                 //将属性值设置到sql中的占位符中
-                fillPlaceholder(pst, values);
+                fillPlaceholder(pst, params);
                 res = pst.executeUpdate();
             }
             return res;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
+            //此处连接肯定要由事务管理，因此不用手动释放，只需要释放pst即可
             close(pst, null);
         }
     }
@@ -68,8 +54,9 @@ public class SqlExecutor {
      * @Param [clazz, sql, values]
      * @Desc 执行query操作
      */
-    public List<Map<String, Object>> executeQuery(String clusterLabel, String sql, List<Object> params) {
-        Connection cn = sstm.getConnection(clusterLabel);
+    public List<Map<String, Object>> executeQuery(String group, String sql, List<Object> params) {
+        DataSource ds = glowRoutingDataSource.getDataSource(group);
+        Connection cn = DataSourceUtils.getConnection(ds);
         PreparedStatement pst = null;
         ResultSet rs = null;
         try {
@@ -83,7 +70,39 @@ public class SqlExecutor {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
+            //不由事务管理需要手动释放连接，使之在连接池中处于空闲状态
+            DataSourceUtils.releaseConnection(cn, ds);
             close(pst, rs);
+        }
+    }
+
+    /**
+     * @Author yudm
+     * @Date 2020/12/25 15:55
+     * @Param [group]
+     * @Desc 获取group对应的连接池组对应的连接组
+     **/
+    private List<Connection> getConnections(String group) {
+        List<DataSource> dataSources = glowRoutingDataSource.getGroupDataSource(group);
+        List<Connection> connections = new ArrayList<>();
+        for (DataSource dataSource : dataSources) {
+            connections.add(DataSourceUtils.getConnection(dataSource));
+        }
+        return connections;
+    }
+
+    /**
+     * @Author yudm
+     * @Date 2020/9/25 15:48
+     * @Param [statement, values]
+     * @Desc 向sql的占位符中填充值
+     */
+    private static void fillPlaceholder(PreparedStatement pst, List<Object> values) throws SQLException {
+        if (null == values || values.size() < 1) {
+            return;
+        }
+        for (int i = 0; i < values.size(); ++i) {
+            pst.setObject(i + 1, values.get(i));
         }
     }
 

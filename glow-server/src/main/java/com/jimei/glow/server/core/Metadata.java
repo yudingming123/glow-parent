@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * @Author yudm
  * @Date 2020/12/20 15:25
- * @Desc
+ * @Desc 用于记录sql操作的元数据类
  */
 public class Metadata implements Serializable {
     private String sql;

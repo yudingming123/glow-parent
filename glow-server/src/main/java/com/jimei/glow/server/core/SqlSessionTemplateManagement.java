@@ -14,7 +14,7 @@ import java.util.Map;
  * @Desc 管理SqlSessionTemplate并对其做负载均衡
  */
 public class SqlSessionTemplateManagement {
-    private final String NO_LABEL = "noLabel";
+    private final String NO_group = "nogroup";
     //每个集群的SqlSessionTemplate池，一个key代表一个集群
     private Map<String, List<SqlSessionTemplate>> sstListMap;
     //每个集群中SqlSessionTemplate的数量
@@ -28,13 +28,13 @@ public class SqlSessionTemplateManagement {
      * @Param [cluster]
      * @Desc 针对写操作获取对应集群所有的数据库的连接
      */
-    public List<Connection> getConnections(String clusterLabel) {
-        if (null == clusterLabel || clusterLabel.isEmpty()) {
-            clusterLabel = NO_LABEL;
+    public List<Connection> getConnections(String clustergroup) {
+        if (null == clustergroup || clustergroup.isEmpty()) {
+            clustergroup = NO_group;
         }
-        List<SqlSessionTemplate> sstList = sstListMap.get(clusterLabel);
+        List<SqlSessionTemplate> sstList = sstListMap.get(clustergroup);
         if (null == sstList || sstList.size() <= 0) {
-            throw new RuntimeException("找不到" + clusterLabel + "对应的SqlSessionTemplate，请检查数据源配置");
+            throw new RuntimeException("找不到" + clustergroup + "对应的SqlSessionTemplate，请检查数据源配置");
         }
         List<Connection> cns = new ArrayList<>();
         for (SqlSessionTemplate sst : sstList) {
@@ -49,19 +49,19 @@ public class SqlSessionTemplateManagement {
      * @Param [cluster]
      * @Desc 针对读操作，负载均衡对应集群中所有数据库的连接
      */
-    public Connection getConnection(String clusterLabel) {
-        if (null == clusterLabel || clusterLabel.isEmpty()) {
-            clusterLabel = NO_LABEL;
+    public Connection getConnection(String clustergroup) {
+        if (null == clustergroup || clustergroup.isEmpty()) {
+            clustergroup = NO_group;
         }
-        List<SqlSessionTemplate> sstList = sstListMap.get(clusterLabel);
+        List<SqlSessionTemplate> sstList = sstListMap.get(clustergroup);
         if (null == sstList || sstList.size() <= 0) {
-            throw new RuntimeException("找不到" + clusterLabel + "对应的SqlSessionTemplate，请检查数据源配置");
+            throw new RuntimeException("找不到" + clustergroup + "对应的SqlSessionTemplate，请检查数据源配置");
         }
         //通过轮询算法对SqlSessionTemplate进行负载均衡
-        int index = sstDutyMap.get(clusterLabel);
-        int count = sstCountMap.get(clusterLabel);
+        int index = sstDutyMap.get(clustergroup);
+        int count = sstCountMap.get(clustergroup);
         index = ++index % count;
-        sstDutyMap.put(clusterLabel, index);
+        sstDutyMap.put(clustergroup, index);
         return getConnection(sstList.get(index));
     }
 

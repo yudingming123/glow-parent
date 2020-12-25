@@ -8,8 +8,7 @@ import lombok.Data;
  * @Desc glow-server的配置信息类
  */
 @Data
-public class Properties {
-    private String clusterLabel = "noLabel";
+public class Property {
     private String url;
     private String username;
     private String password;
