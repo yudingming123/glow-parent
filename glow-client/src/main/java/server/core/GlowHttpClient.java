@@ -2,10 +2,7 @@ package server.core;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.TypeAdapter;
 import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -17,6 +14,7 @@ import server.base.ReqInfo;
 import server.base.RspInfo;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -52,7 +50,7 @@ public class GlowHttpClient {
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(phccm::closeExpiredConnections, 20, period, TimeUnit.MILLISECONDS);
     }
 
-    public <T> RspInfo<T> doPost(ReqInfo req) {
+    public RspInfo<Integer> doWrite(ReqInfo req) {
         CloseableHttpResponse rsp = null;
         try {
             httpPost.setEntity(new StringEntity(gson.toJson(req)));
@@ -65,7 +63,7 @@ public class GlowHttpClient {
                 throw new GlowClientException("GlowHttp status code:" + code);
             }
 
-            return parsEntity(rsp.getEntity());
+            return pars2I(rsp.getEntity());
         } catch (IOException e) {
             throw new GlowClientException(e);
         } finally {
@@ -82,7 +80,39 @@ public class GlowHttpClient {
         }
     }
 
-    private <T> RspInfo<T> parsEntity(HttpEntity entity) {
+    public <T> RspInfo<T> doRead(ReqInfo req) {
+        CloseableHttpResponse rsp = null;
+        try {
+            httpPost.setEntity(new StringEntity(gson.toJson(req)));
+            rsp = httpClient.execute(httpPost);
+            if (null == rsp) {
+                throw new GlowClientException("GlowHttp no response");
+            }
+            int code = rsp.getStatusLine().getStatusCode();
+            if (200 != code) {
+                throw new GlowClientException("GlowHttp status code:" + code);
+            }
+
+            return pars2T(rsp.getEntity());
+        } catch (IOException e) {
+            throw new GlowClientException(e);
+        } finally {
+            release(rsp);
+        }
+    }
+
+    private RspInfo<Integer> pars2I(HttpEntity entity) {
+        String str;
+        try {
+            str = EntityUtils.toString(entity);
+        } catch (IOException e) {
+            throw new GlowClientException(e);
+        }
+        return gson.fromJson(str, new TypeToken<RspInfo<Integer>>() {
+        }.getType());
+    }
+
+    private <T> RspInfo<T> pars2T(HttpEntity entity) {
         String str;
         try {
             str = EntityUtils.toString(entity);
@@ -91,5 +121,36 @@ public class GlowHttpClient {
         }
         return gson.fromJson(str, new TypeToken<RspInfo<T>>() {
         }.getType());
+    }
+
+    public static void main(String[] args) {
+        User user = new User();
+        user.setAge(199);
+        user.setName("xxx");
+        user.setTime(new Date());
+        System.out.println(run(user).toString());
+    }
+
+    private static RspInfo<User> run(User t) {
+        RspInfo<User> rspInfo = new RspInfo<>(1, new Exception(new RuntimeException("ssssss")), t);
+        return test(new GsonBuilder().create().toJson(rspInfo));
+    }
+
+    private static <T> RspInfo<T> test(String str) {
+        return new GsonBuilder().create().fromJson(str, new TypeToken<RspInfo<T>>() {
+        }.getType());
+    }
+
+    private void release(CloseableHttpResponse rsp) {
+        //终止继续读取response
+        httpPost.abort();
+        //关闭response
+        if (null != rsp) {
+            try {
+                rsp.close();
+            } catch (IOException e) {
+                throw new GlowClientException(e);
+            }
+        }
     }
 }
