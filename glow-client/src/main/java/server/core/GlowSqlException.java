@@ -1,4 +1,4 @@
-package com.jimei.glow.server.core;
+package server.core;
 
 
 /**

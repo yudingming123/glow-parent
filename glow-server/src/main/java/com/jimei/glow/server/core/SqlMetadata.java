@@ -8,7 +8,7 @@ import java.util.List;
  * @Date 2020/12/20 15:25
  * @Desc 用于记录sql操作的元数据类
  */
-public class Metadata implements Serializable {
+public class SqlMetadata implements Serializable {
     private String sql;
     private List<Object> params;
 

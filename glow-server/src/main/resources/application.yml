@@ -4,12 +4,20 @@ spring:
   application:
     name: glow-server
   datasource:
-    dbs:
-      - cluster-group: user
-        username: root
-        password: root
-        url: jdbc:mysql://127.0.0.1:3306/youpin?useUnicode=true&characterEncoding=utf-8
-        driver-class-name: com.mysql.cj.jdbc.Driver
-        type: com.alibaba.druid.pool.xa.DruidXADataSource
+    group:
+      user:
+        - username: root
+          password: root
+          url: jdbc:mysql://127.0.0.1:3306/youpin?useUnicode=true&characterEncoding=utf-8
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          type: com.zaxxer.hikari.HikariDataSource
+        - username: root
+          password: root
+          url: jdbc:mysql://127.0.0.1:3306/youpin2?useUnicode=true&characterEncoding=utf-8
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          type: com.alibaba.druid.pool.xa.DruidXADataSource
+
+
+
 
 

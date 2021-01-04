@@ -1,4 +1,4 @@
-package com.jimei.glow.server.base;
+package server.base;
 
 /**
  * @Author yudm

@@ -1,4 +1,4 @@
-package com.jimei.glow.server.core;
+package com.jimei.glow.server.config;
 
 import lombok.Data;
 

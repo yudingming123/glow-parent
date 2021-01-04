@@ -50,7 +50,7 @@ public class GlowRoutingDataSource extends GlowDataSource {
         }
         List<DataSource> dataSources = groupDataSources.get(group);
         if (null == dataSources || dataSources.size() < 1) {
-            throw new GlowSqlException(group + "对应的连接池组未被初始化");
+            throw new GlowSqlException("找不到" + group + "对应的连接池组");
         }
         return dataSources;
     }
