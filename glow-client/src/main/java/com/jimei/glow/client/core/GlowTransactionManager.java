@@ -1,4 +1,4 @@
-package server.core;
+package com.jimei.glow.client.core;
 
 import lombok.Data;
 import org.springframework.stereotype.Component;

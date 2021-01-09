@@ -1,20 +1,14 @@
-package server.core;
+package com.jimei.glow.client.core;
 
 import com.google.common.base.CaseFormat;
 import org.mybatis.spring.SqlSessionTemplate;
-import org.mybatis.spring.SqlSessionUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import javax.swing.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @Author yudm

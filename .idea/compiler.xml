@@ -8,6 +8,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="glow-client" />
+        <module name="common" />
         <module name="glow-server" />
       </profile>
     </annotationProcessing>

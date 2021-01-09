@@ -1,4 +1,4 @@
-package server.base;
+package com.jimei.glow.common.base;
 
 
 import lombok.Data;
@@ -22,6 +22,8 @@ public class ReqInfo {
     private String group;
     //SQL语句
     private String sql;
+    //参数对应的实际类型
+    private List<Integer> types;
     //sql对应的参数
     private List<Object> params;
 }

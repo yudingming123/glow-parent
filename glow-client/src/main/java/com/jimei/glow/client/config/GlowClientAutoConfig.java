@@ -1,4 +1,4 @@
-package server.config;
+package com.jimei.glow.client.config;
 
 import org.apache.http.Header;
 import org.apache.http.HeaderElement;
@@ -18,7 +18,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import server.core.GlowHttpClient;
+import com.jimei.glow.client.core.GlowHttpClient;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -85,7 +85,7 @@ public class GlowClientAutoConfig {
                 }
             }
             //否则使用默认长连接保持时间
-            return gcp.getHttpPool().getKeepAliveTime();
+            return gcp.getKeepAliveTime();
         };
     }
 
@@ -95,7 +95,7 @@ public class GlowClientAutoConfig {
     private List<Header> getDefaultHeaders() {
         List<Header> headers = new ArrayList<>();
         headers.add(new BasicHeader("Connection", "Keep-Alive"));
-        headers.add(new BasicHeader("Content-Type", "application/json;charset=" + gcp.getHttpPool().getCharset()));
+        headers.add(new BasicHeader("Content-Type", "application/json;charset=" + gcp.getCharset()));
         return headers;
     }
 

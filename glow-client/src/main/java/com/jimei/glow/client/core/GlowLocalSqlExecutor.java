@@ -1,8 +1,7 @@
-package server.core;
+package com.jimei.glow.client.core;
 
 import com.google.common.base.CaseFormat;
 import org.mybatis.spring.SqlSessionTemplate;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.stereotype.Component;
 

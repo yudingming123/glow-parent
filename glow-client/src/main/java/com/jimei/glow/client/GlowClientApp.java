@@ -1,4 +1,4 @@
-package server;
+package com.jimei.glow.client;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

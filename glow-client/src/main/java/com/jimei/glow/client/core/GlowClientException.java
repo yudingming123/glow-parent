@@ -1,4 +1,4 @@
-package server.core;
+package com.jimei.glow.client.core;
 
 /**
  * @Author yudm

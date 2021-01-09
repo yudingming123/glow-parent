@@ -1,4 +1,4 @@
-package server.config;
+package com.jimei.glow.client.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

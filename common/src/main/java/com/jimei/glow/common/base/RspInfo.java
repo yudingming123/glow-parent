@@ -1,4 +1,4 @@
-package server.base;
+package com.jimei.glow.common.base;
 
 import lombok.Data;
 

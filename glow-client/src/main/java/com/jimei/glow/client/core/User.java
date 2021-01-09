@@ -1,4 +1,4 @@
-package server.core;
+package com.jimei.glow.client.core;
 
 import lombok.Data;
 
@@ -12,6 +12,6 @@ import java.util.Date;
 @Data
 public class User {
     private String name;
-    private Integer age;
+    private int age;
     private Date time;
 }
