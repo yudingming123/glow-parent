@@ -1,5 +1,8 @@
 package com.jimei.glow.client.config;
 
+import com.jimei.glow.client.core.GlowClientDataSource;
+import com.jimei.glow.client.core.GlowClientSqlExecutor;
+import com.jimei.glow.common.core.sql.GlowSqlExecutor;
 import org.apache.http.Header;
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
@@ -13,12 +16,15 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicHeaderElementIterator;
 import org.apache.http.protocol.HTTP;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionFactoryBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import com.jimei.glow.client.core.GlowHttpClient;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -29,41 +35,60 @@ import java.util.*;
  * @Desc
  */
 @Configuration
-@EnableConfigurationProperties(GlowClientProperty.class)
+@EnableConfigurationProperties(GlowClientDataSourceProperty.class)
 @ConditionalOnClass(value = {CloseableHttpClient.class})
-@ConditionalOnProperty(prefix = "spring.datasource", name = "glow-client", matchIfMissing = false)
+@ConditionalOnProperty(prefix = "spring.datasource")
 public class GlowClientAutoConfig {
     @Resource
-    private GlowClientProperty gcp;
+    private GlowClientDataSourceProperty gcdsp;
 
     @Bean
-    public GlowHttpClient glowHttpClient() {
-        //使用Httpclient连接池的方式配置(推荐)，同时支持netty，okHttp以及其他http框架
-        PoolingHttpClientConnectionManager phccm = new PoolingHttpClientConnectionManager();
-        // 最大连接数和同路由并发数一样
-        phccm.setMaxTotal(gcp.getMaxConnectPerRoute());
-        // 同路由并发数
-        phccm.setDefaultMaxPerRoute(gcp.getMaxConnectPerRoute());
+    public GlowSqlExecutor glowSqlExecutor() {
+        Map<String, String> packGroup = new HashMap<>();
+        Map<String, String> groupLicense = new HashMap<>();
+        Map<String, GlowHttpClient> gGhc = new HashMap<>();
+        for (Map.Entry<String, GlowClientProperty> entry : gcdsp.getGroup().entrySet()) {
+            //
+            packGroup.put(entry.getValue().getBasePackage(), entry.getKey());
+            //
+            groupLicense.put(entry.getKey(), entry.getValue().getSecurity().getLicense());
 
-        HttpClientBuilder hcb = HttpClientBuilder.create();
-        //配置连接池
-        hcb.setConnectionManager(phccm);
-        //重试次数
-        hcb.setRetryHandler(new DefaultHttpRequestRetryHandler(gcp.getRetryTimes(), true));
-        //设置默认请求头
-        hcb.setDefaultHeaders(getDefaultHeaders());
-        //设置长连接保持策略
-        hcb.setKeepAliveStrategy(connectionKeepAliveStrategy());
+            //使用Httpclient连接池的方式配置(推荐)，同时支持netty，okHttp以及其他http框架
+            PoolingHttpClientConnectionManager phccm = new PoolingHttpClientConnectionManager();
+            // 最大连接数和同路由并发数一样
+            phccm.setMaxTotal(entry.getValue().getMaxConnect());
+            // 同路由并发数
+            phccm.setDefaultMaxPerRoute(entry.getValue().getMaxConnect());
 
-        RequestConfig.Builder rcb = RequestConfig.custom();
-        rcb.setConnectionRequestTimeout(gcp.getConnectionRequestTimout());
-        rcb.setSocketTimeout(gcp.getSocketTimeout());
-        rcb.setConnectTimeout(gcp.getConnectTimeout());
+            HttpClientBuilder hcb = HttpClientBuilder.create();
+            //配置连接池
+            hcb.setConnectionManager(phccm);
+            //重试次数
+            hcb.setRetryHandler(new DefaultHttpRequestRetryHandler(entry.getValue().getRetryTimes(), true));
+            //设置默认请求头
+            hcb.setDefaultHeaders(getDefaultHeaders());
+            //设置长连接保持策略
+            hcb.setKeepAliveStrategy(connectionKeepAliveStrategy());
 
-        HttpPost hp = new HttpPost(gcp.getServerUrl());
-        hp.setConfig(rcb.build());
+            RequestConfig.Builder rcb = RequestConfig.custom();
+            rcb.setConnectionRequestTimeout(entry.getValue().getConnectionRequestTimout());
+            rcb.setSocketTimeout(entry.getValue().getSocketTimeout());
+            rcb.setConnectTimeout(entry.getValue().getConnectTimeout());
 
-        return new GlowHttpClient(phccm, hcb.build(), hp, gcp.getKeepAliveTime());
+            HttpPost hp = new HttpPost(entry.getValue().getServerUrl());
+            hp.setConfig(rcb.build());
+            gGhc.put(entry.getKey(), new GlowHttpClient(phccm, hcb.build(), hp, entry.getValue().getKeepAliveTime()));
+        }
+        return new GlowClientSqlExecutor(new GlowClientDataSource(gGhc), packGroup, groupLicense);
+    }
+
+    private SqlSessionFactory createSqlSessionFactory() throws Exception{
+        SqlSessionFactoryBean bean = new SqlSessionFactoryBean();
+        bean.setDataSource(null);
+        bean.setVfs(SpringBootVFS.class);
+        bean.setTypeAliasesPackage(ALIASES_PACKAGE);
+        bean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(MAPPER_LOCATION));
+        return bean.getObject();
     }
 
     /**
@@ -85,7 +110,7 @@ public class GlowClientAutoConfig {
                 }
             }
             //否则使用默认长连接保持时间
-            return gcp.getKeepAliveTime();
+            return gcdsp.getKeepAliveTime();
         };
     }
 
@@ -95,7 +120,7 @@ public class GlowClientAutoConfig {
     private List<Header> getDefaultHeaders() {
         List<Header> headers = new ArrayList<>();
         headers.add(new BasicHeader("Connection", "Keep-Alive"));
-        headers.add(new BasicHeader("Content-Type", "application/json;charset=" + gcp.getCharset()));
+        headers.add(new BasicHeader("Content-Type", "application/json;charset=" + gcdsp.getCharset()));
         return headers;
     }
 

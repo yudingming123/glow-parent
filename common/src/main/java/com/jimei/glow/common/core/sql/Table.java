@@ -1,9 +1,6 @@
-package com.jimei.glow.client.core;
+package com.jimei.glow.common.core.sql;
 
 import com.google.common.base.CaseFormat;
-import com.jimei.glow.client.config.GlowClientProperty;
-import org.mybatis.spring.SqlSessionTemplate;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.lang.reflect.Field;
@@ -16,14 +13,9 @@ import java.util.List;
  * @Date 2020/9/19 17:32
  * @Desc 用于和数据库表进行映射的类，提供一些简单通用的CURD操作，同时也可以执行xml中的自定义SQL语句。
  */
-@Component
 public class Table {
     @Resource
-    private SqlSessionTemplate st;
-    @Resource
-    private GlowClientProperty gcp;
-    @Resource
-    private GlowLocalSqlExecutor gle;
+    private GlowSqlExecutor gle;
     @Resource
     private GlowSqlBuilder gsb;
 

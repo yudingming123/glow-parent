@@ -1,16 +1,18 @@
 package com.jimei.glow.client.config;
 
 import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import java.util.Map;
 
 /**
  * @Author yudm
- * @Date 2020/12/12 11:00
- * @Desc glow-client的配置信息类
+ * @Date 2021/1/12 10:27
+ * @Desc
  */
 @Data
-public class GlowClientProperty {
-    private String basePackage = ".";
-    private boolean enableRemote = false;
+@ConfigurationProperties(prefix = "spring.datasource")
+public class GlowClientDataSourceProperty {
     /**
      * glow服务端的地址，配置了这一项说明使用远程模式，后面的配置才会生效,同时也会使原始的DataSource配置失效，因为这些配置根本不会用到，
      * 否则使用本地模式及原始mybatis模式
@@ -48,4 +50,6 @@ public class GlowClientProperty {
     private String charset = "UTF-8";
 
     private GlowSecurityProperty security;
+
+    private Map<String, GlowClientProperty> group;
 }

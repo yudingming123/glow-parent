@@ -21,16 +21,16 @@ import java.util.Map;
  * @Desc
  */
 @Configuration
-@EnableConfigurationProperties(GlowDataSourceProperty.class)
+@EnableConfigurationProperties(GlowServerDataSourceProperty.class)
 public class GlowServerAutoConfig {
     @Resource
-    private GlowDataSourceProperty glowDataSourceProperty;
+    private GlowServerDataSourceProperty glowServerDataSourceProperty;
 
     @Bean
     public GlowRoutingDataSource glowRoutingDataSource() throws SQLException {
         //DataSource组
         Map<String, List<DataSource>> dataSourcesGroup = new HashMap<>();
-        for (Map.Entry<String, List<Property>> entry : glowDataSourceProperty.getGroup().entrySet()) {
+        for (Map.Entry<String, List<Property>> entry : glowServerDataSourceProperty.getGroup().entrySet()) {
             List<DataSource> dataSources = new ArrayList<>();
             for (Property property : entry.getValue()) {
                 HikariDataSource dataSource = new HikariDataSource();
@@ -47,7 +47,7 @@ public class GlowServerAutoConfig {
 
     @Bean
     public GlowTransactionManager glowTransactionManager() {
-        return new GlowTransactionManager(glowDataSourceProperty.getTransactionPeriod());
+        return new GlowTransactionManager(glowServerDataSourceProperty.getTransactionPeriod());
     }
 
 }

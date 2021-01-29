@@ -4,7 +4,7 @@ import com.google.gson.*;
 import com.jimei.glow.common.base.GlowType;
 import com.jimei.glow.common.base.ReqInfo;
 import com.jimei.glow.common.base.RspInfo;
-import com.jimei.glow.server.config.GlowDataSourceProperty;
+import com.jimei.glow.server.config.GlowServerDataSourceProperty;
 import com.jimei.glow.server.core.GlowSqlException;
 import com.jimei.glow.server.core.GlowSqlExecutor;
 import com.jimei.glow.server.core.GlowTransactionManager;
@@ -22,14 +22,14 @@ import java.util.List;
 @RestController
 public class GlowCtrl {
     @Resource
-    private GlowDataSourceProperty dataSourceProperties;
+    private GlowServerDataSourceProperty dataSourceProperties;
     @Resource
     private GlowSqlExecutor glowSqlExecutor;
     @Resource
     private GlowTransactionManager glowTransactionManager;
 
     @GetMapping("/test")
-    public GlowDataSourceProperty test() {
+    public GlowServerDataSourceProperty test() {
         return dataSourceProperties;
     }
 

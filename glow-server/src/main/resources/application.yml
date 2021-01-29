@@ -4,6 +4,8 @@ spring:
   application:
     name: glow-server
   datasource:
+    secret-key: glow
+    license: glow-server
     group:
       user:
         - username: root

@@ -1,29 +1,28 @@
 package com.jimei.glow.client.core;
 
-import com.google.common.base.CaseFormat;
-import org.mybatis.spring.SqlSessionTemplate;
-import org.springframework.beans.BeanUtils;
-import org.springframework.jdbc.datasource.DataSourceUtils;
-import org.springframework.stereotype.Component;
+import com.jimei.glow.common.core.sql.GlowSqlExecutor;
+import com.jimei.glow.common.base.GlowType;
+import com.jimei.glow.common.base.ReqInfo;
+import com.jimei.glow.common.base.RspInfo;
 
-import javax.annotation.Resource;
-import javax.sql.DataSource;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.sql.*;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @Author yudm
- * @Date 2020/12/7 15:54
- * @Desc Sql语句执行者
+ * @Date 2021/1/12 10:07
+ * @Desc
  */
-@Component
-public class GlowLocalSqlExecutor {
-    @Resource
-    private DataSource ds;
-    @Resource
-    private SqlSessionTemplate st;
+public class GlowClientSqlExecutor implements GlowSqlExecutor {
+    private GlowClientDataSource glowClientDataSource;
+    private Map<String, String> packGroup;
+    private Map<String, String> groupLicense;
+
+    public GlowClientSqlExecutor(GlowClientDataSource glowClientDataSource, Map<String, String> packGroup, Map<String, String> groupLicense) {
+        this.glowClientDataSource = glowClientDataSource;
+        this.packGroup = packGroup;
+        this.groupLicense = groupLicense;
+    }
 
     /**
      * @Author yudm
@@ -31,20 +30,25 @@ public class GlowLocalSqlExecutor {
      * @Param [sql, values]
      * @Desc 执行update操作
      */
-    public int update(String sql, List<Object> values) {
-        Connection cn = DataSourceUtils.getConnection(ds);
-        PreparedStatement pst = null;
-        try {
-            pst = cn.prepareStatement(sql);
-            //将属性值设置到sql中的占位符中
-            fillPst(pst, values);
-            return pst.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            DataSourceUtils.releaseConnection(cn, ds);
-            close(pst, null);
+    @Override
+    public int update(String pack, String sql, List<Integer> types, List<Object> values) {
+        ReqInfo req = new ReqInfo();
+        req.setLicense(gcp.getSecurity().getLicense());
+        //req.setGroup(gcp.getGroup());
+        req.setAction(GlowType.WRITE);
+        req.setSql(sql);
+        req.setTypes(types);
+        req.setParams(values);
+        RspInfo<Integer> rsp = ghc.execute(req);
+        if (null != rsp.getEx()) {
+            throw new RuntimeException(rsp.getEx());
         }
+        return rsp.getData();
+    }
+
+    @Override
+    public <T> List<T> query(Class<T> clazz, String sql, List<Integer> types, List<Object> values) {
+        return null;
     }
 
     /**
@@ -54,7 +58,8 @@ public class GlowLocalSqlExecutor {
      * @Desc 执行update操作
      */
     public int update(String sql, Object value) {
-        Connection cn = DataSourceUtils.getConnection(ds);
+        return 0;
+        /*Connection cn = DataSourceUtils.getConnection(ds);
         PreparedStatement pst = null;
         try {
             pst = cn.prepareStatement(sql);
@@ -65,7 +70,7 @@ public class GlowLocalSqlExecutor {
             throw new RuntimeException(e);
         } finally {
             close(pst, null);
-        }
+        }*/
     }
 
     /**
@@ -75,7 +80,8 @@ public class GlowLocalSqlExecutor {
      * @Desc 执行query操作
      */
     public <T> List<T> query(Class<T> clazz, String sql, List<Object> values) {
-        Connection cn = DataSourceUtils.getConnection(ds);
+        return null;
+        /*Connection cn = DataSourceUtils.getConnection(ds);
         PreparedStatement pst = null;
         ResultSet rs = null;
         try {
@@ -94,15 +100,15 @@ public class GlowLocalSqlExecutor {
         } finally {
             DataSourceUtils.releaseConnection(cn, ds);
             close(pst, rs);
-        }
+        }*/
     }
 
-    /**
+    /*    *//**
      * @Author yudm
      * @Date 2020/10/4 12:33
      * @Param [clazz, resultSet]
      * @Desc 将ResultSet转化成对应的实体类集合
-     */
+     *//*
     private <T> List<T> parsRs(Class<T> clazz, ResultSet rs) {
         List<T> list = new ArrayList<>();
         Field[] fields = clazz.getDeclaredFields();
@@ -137,12 +143,12 @@ public class GlowLocalSqlExecutor {
         return list;
     }
 
-    /**
+    *//**
      * @Author yudm
      * @Date 2020/9/25 15:48
      * @Param [statement, values]
      * @Desc 向sql的占位符中填充值
-     */
+     *//*
     private void fillPst(PreparedStatement pst, List<Object> values) throws SQLException {
         if (null == values || values.size() < 1) {
             return;
@@ -152,12 +158,12 @@ public class GlowLocalSqlExecutor {
         }
     }
 
-    /**
+    *//**
      * @Author yudm
      * @Date 2020/9/25 15:47
      * @Param [connection, statement]
      * @Desc 关闭资源, 当Connection是从连接池中来的时候，必须要关闭，传null。
-     */
+     *//*
     private void close(Statement st, ResultSet rs) {
         try {
             if (null != st) {
@@ -169,5 +175,5 @@ public class GlowLocalSqlExecutor {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-    }
+    }*/
 }

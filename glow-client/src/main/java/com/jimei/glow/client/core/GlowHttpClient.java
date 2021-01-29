@@ -18,6 +18,8 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -74,8 +76,8 @@ public class GlowHttpClient {
         }.getType());
     }
 
-    public static void main(String[] args) {
-        User user = new User();
+   /* public static void main(String[] args) {
+        *//*User user = new User();
         user.setAge(199);
         user.setName("xxx");
         user.setTime(new java.util.Date());
@@ -83,18 +85,21 @@ public class GlowHttpClient {
         System.out.println(user.getTime().getTime());
         System.out.println(new Time(user.getTime().getTime()));
         System.out.println(new Timestamp(user.getTime().getTime()).getTime());
-        System.out.println(new Date(user.getTime().getTime()));
-    }
+        System.out.println(new Date(user.getTime().getTime()));*//*
+        User user = test();
+        System.out.println(user.toString());
+    }*/
 
     /*private static RspInfo<Map<String, Object>> run(User t) {
         RspInfo<Object> rspInfo = new RspInfo<>(1, new Exception(new RuntimeException("ssssss")), t);
         System.out.println(new GsonBuilder().create().toJson(rspInfo));
         return test(new GsonBuilder().create().toJson(rspInfo));
-    }
+    }*/
 
-    private static <T> RspInfo<T> test(String str) {
-        return new GsonBuilder().create().fromJson(str, new TypeToken<RspInfo<T>>() {
-        }.getType());
+    /*private static <T> T test() {
+        T.class.newInstance();
+        Map<String, Object> map = new HashMap<>();
+        return (T) new Object();
     }*/
 
     private void release(CloseableHttpResponse rsp) {
