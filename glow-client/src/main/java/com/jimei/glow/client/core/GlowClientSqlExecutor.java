@@ -1,6 +1,7 @@
+/*
 package com.jimei.glow.client.core;
 
-import com.jimei.glow.common.core.sql.GlowSqlExecutor;
+import com.jimei.glow.common.core.sql.SqlExecutor;
 import com.jimei.glow.common.base.GlowType;
 import com.jimei.glow.common.base.ReqInfo;
 import com.jimei.glow.common.base.RspInfo;
@@ -8,12 +9,38 @@ import com.jimei.glow.common.base.RspInfo;
 import java.util.List;
 import java.util.Map;
 
+*/
 /**
  * @Author yudm
  * @Date 2021/1/12 10:07
  * @Desc
- */
-public class GlowClientSqlExecutor implements GlowSqlExecutor {
+ * @Author yudm
+ * @Date 2020/10/4 12:34
+ * @Param [sql, values]
+ * @Desc 执行update操作
+ * @Author yudm
+ * @Date 2020/10/4 12:34
+ * @Param [sql, value]
+ * @Desc 执行update操作
+ * @Author yudm
+ * @Date 2020/10/4 12:34
+ * @Param [clazz, sql, values]
+ * @Desc 执行query操作
+ * @Author yudm
+ * @Date 2020/10/4 12:33
+ * @Param [clazz, resultSet]
+ * @Desc 将ResultSet转化成对应的实体类集合
+ * @Author yudm
+ * @Date 2020/9/25 15:48
+ * @Param [statement, values]
+ * @Desc 向sql的占位符中填充值
+ * @Author yudm
+ * @Date 2020/9/25 15:47
+ * @Param [connection, statement]
+ * @Desc 关闭资源, 当Connection是从连接池中来的时候，必须要关闭，传null。
+ *//*
+
+public class GlowClientSqlExecutor implements SqlExecutor {
     private GlowClientDataSource glowClientDataSource;
     private Map<String, String> packGroup;
     private Map<String, String> groupLicense;
@@ -24,12 +51,14 @@ public class GlowClientSqlExecutor implements GlowSqlExecutor {
         this.groupLicense = groupLicense;
     }
 
-    /**
-     * @Author yudm
-     * @Date 2020/10/4 12:34
-     * @Param [sql, values]
-     * @Desc 执行update操作
-     */
+    */
+/**
+ * @Author yudm
+ * @Date 2020/10/4 12:34
+ * @Param [sql, values]
+ * @Desc 执行update操作
+ *//*
+
     @Override
     public int update(String pack, String sql, List<Integer> types, List<Object> values) {
         ReqInfo req = new ReqInfo();
@@ -51,15 +80,18 @@ public class GlowClientSqlExecutor implements GlowSqlExecutor {
         return null;
     }
 
-    /**
-     * @Author yudm
-     * @Date 2020/10/4 12:34
-     * @Param [sql, value]
-     * @Desc 执行update操作
-     */
+    */
+/**
+ * @Author yudm
+ * @Date 2020/10/4 12:34
+ * @Param [sql, value]
+ * @Desc 执行update操作
+ *//*
+
     public int update(String sql, Object value) {
         return 0;
-        /*Connection cn = DataSourceUtils.getConnection(ds);
+        */
+/*Connection cn = DataSourceUtils.getConnection(ds);
         PreparedStatement pst = null;
         try {
             pst = cn.prepareStatement(sql);
@@ -70,18 +102,22 @@ public class GlowClientSqlExecutor implements GlowSqlExecutor {
             throw new RuntimeException(e);
         } finally {
             close(pst, null);
-        }*/
+        }*//*
+
     }
 
-    /**
-     * @Author yudm
-     * @Date 2020/10/4 12:34
-     * @Param [clazz, sql, values]
-     * @Desc 执行query操作
-     */
+    */
+/**
+ * @Author yudm
+ * @Date 2020/10/4 12:34
+ * @Param [clazz, sql, values]
+ * @Desc 执行query操作
+ *//*
+
     public <T> List<T> query(Class<T> clazz, String sql, List<Object> values) {
         return null;
-        /*Connection cn = DataSourceUtils.getConnection(ds);
+        */
+/*Connection cn = DataSourceUtils.getConnection(ds);
         PreparedStatement pst = null;
         ResultSet rs = null;
         try {
@@ -100,15 +136,21 @@ public class GlowClientSqlExecutor implements GlowSqlExecutor {
         } finally {
             DataSourceUtils.releaseConnection(cn, ds);
             close(pst, rs);
-        }*/
+        }*//*
+
     }
 
-    /*    *//**
-     * @Author yudm
-     * @Date 2020/10/4 12:33
-     * @Param [clazz, resultSet]
-     * @Desc 将ResultSet转化成对应的实体类集合
-     *//*
+    */
+/*    *//*
+ */
+/**
+ * @Author yudm
+ * @Date 2020/10/4 12:33
+ * @Param [clazz, resultSet]
+ * @Desc 将ResultSet转化成对应的实体类集合
+ *//*
+ */
+/*
     private <T> List<T> parsRs(Class<T> clazz, ResultSet rs) {
         List<T> list = new ArrayList<>();
         Field[] fields = clazz.getDeclaredFields();
@@ -143,12 +185,16 @@ public class GlowClientSqlExecutor implements GlowSqlExecutor {
         return list;
     }
 
-    *//**
-     * @Author yudm
-     * @Date 2020/9/25 15:48
-     * @Param [statement, values]
-     * @Desc 向sql的占位符中填充值
-     *//*
+    *//*
+ */
+/**
+ * @Author yudm
+ * @Date 2020/9/25 15:48
+ * @Param [statement, values]
+ * @Desc 向sql的占位符中填充值
+ *//*
+ */
+/*
     private void fillPst(PreparedStatement pst, List<Object> values) throws SQLException {
         if (null == values || values.size() < 1) {
             return;
@@ -158,12 +204,16 @@ public class GlowClientSqlExecutor implements GlowSqlExecutor {
         }
     }
 
-    *//**
-     * @Author yudm
-     * @Date 2020/9/25 15:47
-     * @Param [connection, statement]
-     * @Desc 关闭资源, 当Connection是从连接池中来的时候，必须要关闭，传null。
-     *//*
+    *//*
+ */
+/**
+ * @Author yudm
+ * @Date 2020/9/25 15:47
+ * @Param [connection, statement]
+ * @Desc 关闭资源, 当Connection是从连接池中来的时候，必须要关闭，传null。
+ *//*
+ */
+/*
     private void close(Statement st, ResultSet rs) {
         try {
             if (null != st) {
@@ -175,5 +225,7 @@ public class GlowClientSqlExecutor implements GlowSqlExecutor {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-    }*/
+    }*//*
+
 }
+*/

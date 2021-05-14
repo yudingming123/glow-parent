@@ -1,6 +1,6 @@
 package com.jimei.glow.common.core.transaction;
 
-import com.jimei.glow.common.core.exception.GlowSqlException;
+import com.jimei.glow.common.core.exception.SqlException;
 import lombok.Data;
 
 import javax.sql.DataSource;
@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  * @Desc
  */
 @Data
-public class GlowTransactionManager {
+public class SilenceTransactionManager {
     public static final int ROLLBACK = 1;
     public static final int COMMIT = 2;
     public final long TRS_WAIT;
@@ -25,7 +25,7 @@ public class GlowTransactionManager {
     private final Map<String, Map<String, Map<Connection, DataSource>>> tiGpCnDs = new HashMap<>();
     private final Map<String, Long> tiMs = new HashMap<>();
 
-    public GlowTransactionManager(long period) {
+    public SilenceTransactionManager(long period) {
         if (period < 10000) {
             this.TRS_WAIT = 20 * 1000;
         } else {
@@ -90,10 +90,10 @@ public class GlowTransactionManager {
                     } else if (COMMIT == opr) {
                         entry.getKey().commit();
                     } else {
-                        throw new GlowSqlException("opr的值不正确：" + opr);
+                        throw new SqlException("opr的值不正确：" + opr);
                     }
                 } catch (Throwable t) {
-                    throw new GlowSqlException(t);
+                    throw new SqlException(t);
                 }
                 close(entry.getKey(), entry.getValue());
             }
@@ -105,7 +105,7 @@ public class GlowTransactionManager {
         try {
             cn.close();
         } catch (SQLException t) {
-            throw new GlowSqlException(t);
+            throw new SqlException(t);
         }
     }
 }

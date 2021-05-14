@@ -1,4 +1,4 @@
-package com.jimei.glow.local.config;
+package com.jimei.silence.config;
 
 import com.jimei.glow.common.property.GlowDataSourceProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -9,5 +9,5 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @Desc
  */
 @ConfigurationProperties(prefix = "spring.datasource")
-public class GlowLocalDataSourceProperty extends GlowDataSourceProperty {
+public class SilenceDataSourceProperty extends GlowDataSourceProperty {
 }

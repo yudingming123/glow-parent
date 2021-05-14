@@ -1,84 +1,68 @@
-package com.jimei.glow.server.core;
+package com.jimei.silence.core.sql;
 
 import com.google.common.base.CaseFormat;
+import com.jimei.glow.common.core.datasource.SilenceDataSourceUtil;
+import com.jimei.glow.common.core.exception.SqlException;
+import com.jimei.glow.common.core.sql.ISqlExecutor;
+import com.jimei.glow.common.core.sql.SilenceConfig;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.*;
 
 /**
  * @Author yudm
- * @Date 2020/12/7 15:54
- * @Desc Sql语句执行者
+ * @Date 2021/5/13 17:40
+ * @Desc
  */
 @Component
-public class GlowSqlExecutor {
-    /**
-     * @Author yudm
-     * @Date 2020/10/4 12:34
-     * @Param [sql, values]
-     * @Desc 执行update操作
-     */
-    public int update(String group, String sql, List<Object> params) {
-        Map<Connection, DataSource> cnDsMap = GlowDataSourceUtil.getCnDsMap(group);
+public class SilenceSqlExecutor implements ISqlExecutor {
+
+    @Resource
+    private SilenceConfig silenceConfig;
+
+    @Override
+    public int update(String pack, String sql, List<Object> values) {
+        Map<Connection, DataSource> cnDsMap = SilenceDataSourceUtil.getCnDsMap(silenceConfig.getGroup(pack));
+        Collection<Connection> cns = cnDsMap.keySet();
         try {
-            int res = update(cnDsMap.keySet(), sql, params);
-            commit(cnDsMap.keySet());
+            int res = doUpdate(cns, sql, values);
+            commit(cns);
             return res;
         } catch (SQLException e) {
-            rollback(cnDsMap.keySet());
-            throw new GlowSqlException(e);
+            rollback(cns);
+            throw new SqlException(e);
         } finally {
             //不由事务管理，需要手动释放cn
-            GlowDataSourceUtil.release(cnDsMap);
+            SilenceDataSourceUtil.release(cnDsMap);
         }
     }
 
-    public int update(String trsId, String group, String sql, List<Object> params) {
-        Map<Connection, DataSource> cnDsMap = GlowDataSourceUtil.getCnDsMap(trsId, group);
-        try {
-            return update(cnDsMap.keySet(), sql, params);
-        } catch (SQLException e) {
-            rollback(cnDsMap.keySet());
-            throw new GlowSqlException(e);
-        }
+    @Override
+    public int saveBatch(String pack, String sql, List<List<Object>> values) {
+        return 0;
     }
 
-    /**
-     * @Author yudm
-     * @Date 2020/10/4 12:34
-     * @Param [clazz, sql, values]
-     * @Desc 执行query操作
-     */
-    public List<Map<String, Object>> query(String group, String sql, List<Object> params) {
-        Connection cn = GlowDataSourceUtil.getConnection(group);
-        PreparedStatement pst = null;
-        ResultSet rs = null;
-        try {
-            pst = cn.prepareStatement(sql);
-            //将属性值设置到sql中的占位符中
-            if (null != params && params.size() > 0) {
-                fillPst(pst, params);
-            }
-            rs = pst.executeQuery();
-            return parsRs(rs);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            //不由事务管理需要手动释放连接，使之在连接池中处于空闲状态
-            close(cn, pst, rs);
-        }
+    @Override
+    public <T> List<T> query(String pack, String sql, List<Object> values, Class<T> clazz) {
+        return null;
     }
 
-    private int update(Collection<Connection> cns, String sql, List<Object> params) throws SQLException {
+    @Override
+    public List<Map<String, Object>> query(String pack, String sql, List<Integer> types, List<Object> values) {
+        return null;
+    }
+
+    private int doUpdate(Collection<Connection> cns, String sql, List<Object> values) throws SQLException {
         PreparedStatement pst = null;
         try {
             int res = 0;
             for (Connection cn : cns) {
                 pst = cn.prepareStatement(sql);
                 //将属性值设置到sql中的占位符中
-                fillPst(pst, params);
+                fillPst(pst, values);
                 res = pst.executeUpdate();
             }
             return res;
@@ -93,7 +77,7 @@ public class GlowSqlExecutor {
             try {
                 cn.commit();
             } catch (SQLException e) {
-                throw new GlowSqlException(e);
+                throw new SqlException(e);
             }
         }
     }
@@ -103,11 +87,10 @@ public class GlowSqlExecutor {
             try {
                 cn.rollback();
             } catch (SQLException e) {
-                throw new GlowSqlException(e);
+                throw new SqlException(e);
             }
         }
     }
-
 
     /**
      * @Author yudm
@@ -115,10 +98,10 @@ public class GlowSqlExecutor {
      * @Param [statement, values]
      * @Desc 向sql的占位符中填充值
      */
-    private static void fillPst(PreparedStatement pst, List<Object> params) throws SQLException {
-        if (null != params && params.size() > 0) {
-            for (int i = 0; i < params.size(); ++i) {
-                pst.setObject(i + 1, params.get(i));
+    private static void fillPst(PreparedStatement pst, List<Object> values) throws SQLException {
+        if (null != values && values.size() > 0) {
+            for (int i = 0; i < values.size(); ++i) {
+                pst.setObject(i + 1, values.get(i));
             }
         }
     }
@@ -175,4 +158,5 @@ public class GlowSqlExecutor {
             throw new RuntimeException(e);
         }
     }
+
 }

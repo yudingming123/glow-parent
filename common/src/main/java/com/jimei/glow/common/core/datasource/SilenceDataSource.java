@@ -17,8 +17,7 @@ import java.util.logging.Logger;
  * @Desc 仅用于实现DataSource接口，这些方法都不会用到，是假实现
  */
 @Data
-@Slf4j
-public class GlowDataSource implements DataSource {
+public class SilenceDataSource implements DataSource {
 
     @Override
     public Connection getConnection() throws SQLException {

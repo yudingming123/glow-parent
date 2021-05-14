@@ -1,6 +1,6 @@
-package com.jimei.glow.local.config;
+package com.jimei.silence.config;
 
-import com.jimei.glow.common.core.datasource.GlowRoutingDataSource;
+import com.jimei.glow.common.core.datasource.SilenceRoutingDataSource;
 import com.jimei.glow.common.property.MetaProperty;
 import com.jimei.glow.common.property.GroupProperty;
 import com.zaxxer.hikari.HikariDataSource;
@@ -21,16 +21,16 @@ import java.util.Map;
  * @Desc
  */
 @Configuration
-@EnableConfigurationProperties(GlowLocalDataSourceProperty.class)
-public class GlowLocalAutoConfig {
+@EnableConfigurationProperties(SilenceDataSourceProperty.class)
+public class SilenceAutoConfig {
     @Resource
-    private GlowLocalDataSourceProperty glowLocalDataSourceProperty;
+    private SilenceDataSourceProperty silenceDataSourceProperty;
 
     @Bean
-    public GlowRoutingDataSource glowRoutingDataSource() {
+    public SilenceRoutingDataSource glowRoutingDataSource() {
         //DataSource组
         Map<String, List<DataSource>> groupDataSources = new HashMap<>();
-        for (Map.Entry<String, GroupProperty> entry : glowLocalDataSourceProperty.getGroup().entrySet()) {
+        for (Map.Entry<String, GroupProperty> entry : silenceDataSourceProperty.getGroup().entrySet()) {
             List<DataSource> dataSources = new ArrayList<>();
             for (MetaProperty property : entry.getValue().getMetas()) {
                 HikariDataSource dataSource = new HikariDataSource();
@@ -42,6 +42,6 @@ public class GlowLocalAutoConfig {
             }
             groupDataSources.put(entry.getKey(), dataSources);
         }
-        return new GlowRoutingDataSource(groupDataSources);
+        return new SilenceRoutingDataSource(groupDataSources);
     }
 }

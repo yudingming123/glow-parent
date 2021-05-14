@@ -1,7 +1,7 @@
 package com.jimei.glow.common.core.datasource;
 
-import com.jimei.glow.common.core.exception.GlowSqlException;
-import com.jimei.glow.common.core.transaction.GlowTransactionManager;
+import com.jimei.glow.common.core.exception.SqlException;
+import com.jimei.glow.common.core.transaction.SilenceTransactionManager;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
@@ -16,18 +16,18 @@ import java.util.Map;
  * @Date 2020/12/29 16:23
  * @Desc 获取和释放连接相关工具类
  */
-public class GlowDataSourceUtil {
-    private static GlowRoutingDataSource ds;
-    private static GlowTransactionManager tm;
+public class SilenceDataSourceUtil {
+    private static SilenceRoutingDataSource ds;
+    private static SilenceTransactionManager tm;
 
     @Resource
-    public void setGlowRoutingDataSource(GlowRoutingDataSource glowRoutingDataSource) {
-        GlowDataSourceUtil.ds = glowRoutingDataSource;
+    public void setSilenceRoutingDataSource(SilenceRoutingDataSource silenceRoutingDataSource) {
+        SilenceDataSourceUtil.ds = silenceRoutingDataSource;
     }
 
     @Resource
-    public void setGlowTransactionManager(GlowTransactionManager glowTransactionManager) {
-        GlowDataSourceUtil.tm = glowTransactionManager;
+    public void setSilenceTransactionManager(SilenceTransactionManager silenceTransactionManager) {
+        SilenceDataSourceUtil.tm = silenceTransactionManager;
     }
 
     public static Map<Connection, DataSource> getCnDsMap(String trsId, String group) {
@@ -50,7 +50,7 @@ public class GlowDataSourceUtil {
                 cn.setAutoCommit(false);
                 cnDsMap.put(cn, dataSource);
             } catch (SQLException t) {
-                throw new GlowSqlException(t);
+                throw new SqlException(t);
             }
         }
         return cnDsMap;
@@ -60,7 +60,7 @@ public class GlowDataSourceUtil {
         try {
             return ds.getDataSource(group).getConnection();
         } catch (SQLException t) {
-            throw new GlowSqlException(t);
+            throw new SqlException(t);
         }
     }
 
@@ -70,7 +70,7 @@ public class GlowDataSourceUtil {
             try {
                 entry.getKey().close();
             } catch (SQLException t) {
-                throw new GlowSqlException(t);
+                throw new SqlException(t);
             }
         }
     }

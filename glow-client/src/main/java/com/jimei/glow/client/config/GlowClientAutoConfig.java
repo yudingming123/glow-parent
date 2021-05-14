@@ -2,7 +2,7 @@ package com.jimei.glow.client.config;
 
 import com.jimei.glow.client.core.GlowClientDataSource;
 import com.jimei.glow.client.core.GlowClientSqlExecutor;
-import com.jimei.glow.common.core.sql.GlowSqlExecutor;
+import com.jimei.glow.common.core.sql.ISqlExecutor;
 import org.apache.http.Header;
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
@@ -43,7 +43,7 @@ public class GlowClientAutoConfig {
     private GlowClientDataSourceProperty gcdsp;
 
     @Bean
-    public GlowSqlExecutor glowSqlExecutor() {
+    public ISqlExecutor glowSqlExecutor() {
         Map<String, String> packGroup = new HashMap<>();
         Map<String, String> groupLicense = new HashMap<>();
         Map<String, GlowHttpClient> gGhc = new HashMap<>();

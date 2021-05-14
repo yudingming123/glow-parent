@@ -1,6 +1,6 @@
 package com.jimei.glow.common.core.datasource;
 
-import com.jimei.glow.common.core.exception.GlowSqlException;
+import com.jimei.glow.common.core.exception.SqlException;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
@@ -9,16 +9,16 @@ import java.util.List;
 import java.util.Map;
 
 
-public class GlowRoutingDataSource extends GlowDataSource {
+public class SilenceRoutingDataSource extends SilenceDataSource {
     //所有连接池组
     private final Map<String, List<DataSource>> groupDataSources;
 
     //负载均衡计数器组
     private final Map<String, Indexer> groupIndexer;
 
-    public GlowRoutingDataSource(Map<String, List<DataSource>> groupDataSources) {
+    public SilenceRoutingDataSource(Map<String, List<DataSource>> groupDataSources) {
         if (null == groupDataSources || groupDataSources.size() < 1) {
-            throw new GlowSqlException("参数groupDataSources不能为空");
+            throw new SqlException("参数groupDataSources不能为空");
         }
         this.groupDataSources = groupDataSources;
         Map<String, Indexer> map = new HashMap<>();
@@ -46,11 +46,11 @@ public class GlowRoutingDataSource extends GlowDataSource {
      **/
     public List<DataSource> getGroupDataSource(String group) {
         if (null == groupDataSources || groupDataSources.size() < 1) {
-            throw new GlowSqlException("连接池:groupDataSources未被初始化");
+            throw new SqlException("连接池:groupDataSources未被初始化");
         }
         List<DataSource> dataSources = groupDataSources.get(group);
         if (null == dataSources || dataSources.size() < 1) {
-            throw new GlowSqlException("找不到" + group + "对应的连接池组");
+            throw new SqlException("找不到" + group + "对应的连接池组");
         }
         return dataSources;
     }
@@ -73,7 +73,7 @@ public class GlowRoutingDataSource extends GlowDataSource {
      **/
     public synchronized void addDataSource(String group, DataSource dataSource) {
         if (null == group || group.trim().isEmpty() || null == dataSource) {
-            throw new GlowSqlException("新建数据源时，group和dataSource不能为空");
+            throw new SqlException("新建数据源时，group和dataSource不能为空");
         }
         //如该组已经存在，则直接添加到组里面，否则新建组
         if (groupDataSources.containsKey(group)) {
