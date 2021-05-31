@@ -1,22 +1,24 @@
 package com.jimei.glow.common.core.datasource;
 
 import com.jimei.glow.common.core.exception.SqlException;
+import org.springframework.jdbc.datasource.DataSourceUtils;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 
-public class SilenceRoutingDataSource extends SilenceDataSource {
+public class DataSourceManager {
     //所有连接池组
     private final Map<String, List<DataSource>> groupDataSources;
 
     //负载均衡计数器组
     private final Map<String, Indexer> groupIndexer;
 
-    public SilenceRoutingDataSource(Map<String, List<DataSource>> groupDataSources) {
+    public DataSourceManager(Map<String, List<DataSource>> groupDataSources) {
         if (null == groupDataSources || groupDataSources.size() < 1) {
             throw new SqlException("参数groupDataSources不能为空");
         }
@@ -28,14 +30,26 @@ public class SilenceRoutingDataSource extends SilenceDataSource {
         this.groupIndexer = map;
     }
 
+    public Connection getConnection(String group) {
+        return DataSourceUtils.getConnection(getDataSource(group));
+    }
+
+    public List<Connection> getConnections(String group) {
+        List<Connection> cons = new ArrayList<>();
+        for (DataSource ds : getDataSources(group)) {
+            cons.add(DataSourceUtils.getConnection(getDataSource(group)));
+        }
+        return cons;
+    }
+
     /**
      * @Author yudm
      * @Date 2020/12/25 14:40
      * @Param [group]
      * @Desc 获取group对应连接池组中一个经过负载均衡的连接池
      **/
-    public DataSource getDataSource(String group) {
-        return getGroupDataSource(group).get(groupIndexer.get(group).getAndAdd());
+    private DataSource getDataSource(String group) {
+        return getDataSources(group).get(groupIndexer.get(group).getAndAdd());
     }
 
     /**
@@ -44,7 +58,7 @@ public class SilenceRoutingDataSource extends SilenceDataSource {
      * @Param [group]
      * @Desc 获取group对应的连接池组
      **/
-    public List<DataSource> getGroupDataSource(String group) {
+    private List<DataSource> getDataSources(String group) {
         if (null == groupDataSources || groupDataSources.size() < 1) {
             throw new SqlException("连接池:groupDataSources未被初始化");
         }
@@ -61,7 +75,7 @@ public class SilenceRoutingDataSource extends SilenceDataSource {
      * @Param []
      * @Desc 获取所有连接池组
      **/
-    public Map<String, List<DataSource>> getGroupDataSources() {
+    public Map<String, List<DataSource>> getAllDataSources() {
         return groupDataSources;
     }
 

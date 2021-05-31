@@ -13,6 +13,7 @@
         <module>glow-client</module>
         <module>common</module>
         <module>silence</module>
+        <module>test</module>
     </modules>
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

@@ -1,4 +1,4 @@
-package com.jimei.glow.common.core.sql;
+package com.jimei.silence.core.sql;
 
 import java.util.List;
 import java.util.Map;

@@ -1,9 +1,9 @@
-package com.jimei.glow.common.core.sql;
+package com.jimei.silence.core.sql;
+
 
 import com.google.common.base.CaseFormat;
-import com.jimei.glow.common.core.exception.SqlException;
+import com.jimei.silence.core.exception.SqlException;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,18 +14,9 @@ import java.util.Map;
  * @Desc 用于和数据库表进行映射的类，提供一些简单通用的CURD操作，同时也可以执行xml中的自定义SQL语句。
  */
 public class Table {
-    private static ISqlExecutor ISqlExecutor;
-    private static SqlBuilder sqlBuilder;
+    private static final SqlExecutor sqlExecutor = new SqlExecutor();
+    private static final SqlBuilder sqlBuilder = new SqlBuilder();
 
-    @Resource
-    public static void setISqlExecutor(ISqlExecutor ISqlExecutor) {
-        Table.ISqlExecutor = ISqlExecutor;
-    }
-
-    @Resource
-    public static void setSqlBuilder(SqlBuilder sqlBuilder) {
-        Table.sqlBuilder = sqlBuilder;
-    }
 
     /**
      * @Author yudm
@@ -64,40 +55,40 @@ public class Table {
     }
 
     public static <T> int deleteById(Class<T> clazz, Object id) {
-        return ISqlExecutor.update(getPackagePath(), sqlBuilder.buildDeleteSql(clazz.getSimpleName(), sqlBuilder.getColumns(clazz).get(0)), new ArrayList<Object>() {{add(id);}});
+        return sqlExecutor.update(getPackagePath(), sqlBuilder.buildDeleteSql(clazz.getSimpleName(), sqlBuilder.getColumns(clazz).get(0)), new ArrayList<Object>() {{add(id);}});
     }
 
 
     public static int execute(String pSql, Object data) {
         if (null == data) {
-            return ISqlExecutor.update(getPackagePath(), sqlBuilder.build(pSql, null, null), null);
+            return sqlExecutor.update(getPackagePath(), sqlBuilder.build(pSql, null, null), null);
         }
         List<Object> values = new ArrayList<>();
-        return ISqlExecutor.update(getPackagePath(), sqlBuilder.build(pSql, sqlBuilder.toMap(data), values), values);
+        return sqlExecutor.update(getPackagePath(), sqlBuilder.build(pSql, sqlBuilder.toMap(data), values), values);
     }
 
 
     public static <T> T selectOne(String pSql, Object data, Class<T> clazz) {
         List<T> list;
         if (null == data) {
-            list = ISqlExecutor.query(getPackagePath(), sqlBuilder.build(pSql, null, null), null, clazz);
+            list = sqlExecutor.query(getPackagePath(), sqlBuilder.build(pSql, null, null), null, clazz);
         } else {
             List<Object> values = new ArrayList<>();
-            list = ISqlExecutor.query(getPackagePath(), sqlBuilder.build(pSql, sqlBuilder.toMap(data), values), values, clazz);
+            list = sqlExecutor.query(getPackagePath(), sqlBuilder.build(pSql, sqlBuilder.toMap(data), values), values, clazz);
         }
         return list != null && list.size() > 0 ? list.get(0) : null;
     }
 
     public static <T> List<T> selectAll(Class<T> clazz) {
-        return ISqlExecutor.query(getPackagePath(), "select * from " + CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, clazz.getSimpleName()), null, clazz);
+        return sqlExecutor.query(getPackagePath(), "select * from " + CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, clazz.getSimpleName()), null, clazz);
     }
 
     public static <T> List<T> selectList(String pSql, Object data, Class<T> clazz) {
         if (null == data) {
-            return ISqlExecutor.query(getPackagePath(), sqlBuilder.build(pSql, null, null), null, clazz);
+            return sqlExecutor.query(getPackagePath(), sqlBuilder.build(pSql, null, null), null, clazz);
         }
         List<Object> values = new ArrayList<>();
-        return ISqlExecutor.query(getPackagePath(), sqlBuilder.build(pSql, sqlBuilder.toMap(data), values), values, clazz);
+        return sqlExecutor.query(getPackagePath(), sqlBuilder.build(pSql, sqlBuilder.toMap(data), values), values, clazz);
     }
 
     public static <T> Page<T> selectPage(int pageNum, int pageSize, boolean total, Class<T> clazz) {
@@ -106,9 +97,9 @@ public class Table {
         page.setPageSize(pageSize);
         String tableName = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, clazz.getSimpleName());
         if (total) {
-            page.setTotal(ISqlExecutor.query(getPackagePath(), "select count(*) from " + tableName, null, Integer.class).get(0));
+            page.setTotal(sqlExecutor.query(getPackagePath(), "select count(*) from " + tableName, null, Integer.class).get(0));
         }
-        page.setList(ISqlExecutor.query(getPackagePath(), "select * from " + tableName + " limit " + (pageNum - 1) + "," + pageSize, null, clazz));
+        page.setList(sqlExecutor.query(getPackagePath(), "select * from " + tableName + " limit " + (pageNum - 1) + "," + pageSize, null, clazz));
         return page;
     }
 
@@ -125,14 +116,14 @@ public class Table {
             sql = sqlBuilder.build(pSql, sqlBuilder.toMap(data), values);
         }
         if (total) {
-            page.setTotal(ISqlExecutor.query(getPackagePath(), "select count(*) from (" + sql + ")", null, Integer.class).get(0));
+            page.setTotal(sqlExecutor.query(getPackagePath(), "select count(*) from (" + sql + ")", null, Integer.class).get(0));
         }
-        page.setList(ISqlExecutor.query(getPackagePath(), sql + " limit " + (pageNum - 1) + "," + pageSize, values, clazz));
+        page.setList(sqlExecutor.query(getPackagePath(), sql + " limit " + (pageNum - 1) + "," + pageSize, values, clazz));
         return page;
     }
 
     public static int selectCount(Class<?> clazz) {
-        List<Integer> list = ISqlExecutor.query(getPackagePath(), "select count(*) from " + clazz.getSimpleName(), null, Integer.class);
+        List<Integer> list = sqlExecutor.query(getPackagePath(), "select count(*) from " + clazz.getSimpleName(), null, Integer.class);
         return list != null && list.size() > 0 ? list.get(0) : 0;
     }
 
@@ -144,7 +135,7 @@ public class Table {
     private static <T> int doInsert(String pack, T entity, boolean selective) {
         Map<String, Object> kv = sqlBuilder.toMap(entity);
         String sql = sqlBuilder.buildInsertSql(entity.getClass().getSimpleName(), sqlBuilder.getColumns(kv, selective));
-        return ISqlExecutor.update(pack, sql, sqlBuilder.getValues(kv, selective));
+        return sqlExecutor.update(pack, sql, sqlBuilder.getValues(kv, selective));
     }
 
     private static <T> int[] doInsertList(String pack, List<T> entities, boolean selective) {
@@ -159,13 +150,13 @@ public class Table {
             values.add(sqlBuilder.getValues(sqlBuilder.toMap(entities.get(i)), selective));
         }
         String sql = sqlBuilder.buildInsertSql(t.getClass().getSimpleName(), sqlBuilder.getColumns(kv, selective));
-        return ISqlExecutor.saveBatch(pack, sql, values);
+        return sqlExecutor.saveBatch(pack, sql, values);
     }
 
     private static <T> int doUpdate(String pack, T entity, boolean selective) {
         Map<String, Object> kv = sqlBuilder.toMap(entity);
         String sql = sqlBuilder.buildUpdateSql(entity.getClass().getSimpleName(), sqlBuilder.getColumns(kv, selective));
-        return ISqlExecutor.update(pack, sql, sqlBuilder.getValues(kv, selective));
+        return sqlExecutor.update(pack, sql, sqlBuilder.getValues(kv, selective));
     }
 
 }

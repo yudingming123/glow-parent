@@ -11,6 +11,7 @@
         <module name="glow-server" />
         <module name="silence" />
         <module name="common" />
+        <module name="test" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
