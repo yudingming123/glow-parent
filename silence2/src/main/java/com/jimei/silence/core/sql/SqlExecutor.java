@@ -60,17 +60,15 @@ public class SqlExecutor {
     }
 
     public <T> List<T> query(String pack, String sql, List<Object> values, Class<T> clazz) {
-        Collection<Connection> cns = dataSourceManager.getConnections(pack);
+        Connection cn = dataSourceManager.getConnection(pack);
         PreparedStatement pst = null;
         ResultSet rs = null;
-        List<T> list = null;
+        List<T> list;
         try {
-            for (Connection cn : cns) {
-                pst = cn.prepareStatement(sql);
-                fillPst(pst, values);
-                rs = pst.executeQuery();
-                list = parsRs(rs, clazz);
-            }
+            pst = cn.prepareStatement(sql);
+            fillPst(pst, values);
+            rs = pst.executeQuery();
+            list = parsRs(rs, clazz);
         } catch (Exception e) {
             throw new SqlException(e);
         } finally {
@@ -80,17 +78,15 @@ public class SqlExecutor {
     }
 
     public List<Map<String, Object>> query(String pack, String sql, List<Integer> types, List<Object> values) {
-        Collection<Connection> cns = dataSourceManager.getConnections(pack);
+        Connection cn = dataSourceManager.getConnection(pack);
         PreparedStatement pst = null;
         ResultSet rs = null;
         List<Map<String, Object>> list = null;
         try {
-            for (Connection cn : cns) {
-                pst = cn.prepareStatement(sql);
-                fillPst(pst, values);
-                rs = pst.executeQuery();
-                list = parsRs(rs);
-            }
+            pst = cn.prepareStatement(sql);
+            fillPst(pst, values);
+            rs = pst.executeQuery();
+            list = parsRs(rs);
         } catch (Exception e) {
             throw new SqlException(e);
         } finally {

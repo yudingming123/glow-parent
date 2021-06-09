@@ -2,7 +2,6 @@ package com.jimei.test.ctrl;
 
 import com.jimei.test.svc.user.TestSvc;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -20,5 +19,15 @@ public class TestCtrl {
     @GetMapping("test")
     public void test() {
         testSvc.insert();
+    }
+
+    @GetMapping("/add1")
+    public Long add1() {
+        return testSvc.add1();
+    }
+
+    @GetMapping("/add2")
+    public Long add2() {
+        return testSvc.add2();
     }
 }
